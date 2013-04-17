@@ -195,10 +195,29 @@ public class MultiReferencePropertyJoinTest {
         query = "SELECT artifact2.*\r\n" +
         		"   FROM [sramp:artifact] AS artifact1\r\n" +
         		"   JOIN [sramp:relationship] AS relationship1 ON ISCHILDNODE(relationship1, artifact1)\r\n" +
-        		"   JOIN [sramp:artifact] AS artifact2 ON relationship1.[sramp:target] = artifact2.[jcr.uuid]\r\n" +
+        		"   JOIN [sramp:artifact] AS artifact2 ON relationship1.[sramp:target] = artifact2.[jcr:uuid]\r\n" +
         		"   WHERE artifact1.[sramp:name] = 'A'\r\n" +
         		"    AND relationship1.[sramp:type] = 'relatesTo')\r\n" +
         		"";
+        jcrQueryManager = session.getWorkspace().getQueryManager();
+        jcrQuery = jcrQueryManager.createQuery(query, JCRConstants.JCR_SQL2);
+        jcrQueryResult = jcrQuery.execute();
+        System.out.println("\n\nResult 3:");
+        System.out.println(jcrQueryResult.toString());
+        jcrNodes = jcrQueryResult.getNodes();
+        Assert.assertEquals("Expected two (2) nodes (Artifact B and Artifact C) to come back!", 2, jcrNodes.getSize());
+
+
+        // We made it past that.  Cool.  Let's try the same query but with a DISTINCT on it.  We'll
+        // need this in case multiple artifacts have the same relationship to the same other artifact.  We
+        // don't want that other artifact showing up in the result set multiple times.
+        query = "SELECT DISTINCT artifact2.*\r\n" +
+                "   FROM [sramp:artifact] AS artifact1\r\n" +
+                "   JOIN [sramp:relationship] AS relationship1 ON ISCHILDNODE(relationship1, artifact1)\r\n" +
+                "   JOIN [sramp:artifact] AS artifact2 ON relationship1.[sramp:target] = artifact2.[jcr:uuid]\r\n" +
+                "   WHERE artifact1.[sramp:name] = 'A'\r\n" +
+                "    AND relationship1.[sramp:type] = 'relatesTo')\r\n" +
+                "";
         jcrQueryManager = session.getWorkspace().getQueryManager();
         jcrQuery = jcrQueryManager.createQuery(query, JCRConstants.JCR_SQL2);
         jcrQueryResult = jcrQuery.execute();
